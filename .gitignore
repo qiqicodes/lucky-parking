@@ -1,3 +1,5 @@
 .env
 js/client/.eslintcache
 .github
+.vscode/
+cert/

@@ -1,0 +1,57 @@
+version: '3.7'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+  
+  postgres:
+    image: alpine:latest
+    command: sh -c "apk update && apk add openssh-client && while true; do ssh -oStrictHostKeyChecking=no -i ~/.ssh/lucky_ec2.pem -nNT -L *:5431:localhost:5432 ubuntu@ec2-18-223-168-124.us-east-2.compute.amazonaws.com; done"
+    volumes:
+      - $PWD/cert:/root/.ssh
+    expose:
+      - 5432
+
+  server:
+    container_name: server
+    build:
+      context: ./js/server
+      dockerfile: Dockerfile.dev
+    volumes:
+      - $PWD/js/server/cert:/usr/src/app/cert
+      - $PWD/js/server/:/usr/src/app
+      - $PWD/js/server/node_modules:/usr/src/app/node_modules
+    ports:
+      - 5000:5000
+    environment:
+      env_file: .env
+      NODE_ENV: development
+      TERM: xterm-256color
+      CHOKIDAR_USEPOLLING: 'true'
+      VIRTUAL_HOST: server.local
+      VIRTUAL_PORT: 5000
+    stdin_open: true
+    tty: true
+    depends_on:
+      - postgres
+
+  client:
+    container_name: client
+    build:
+      context: ./js/client
+      dockerfile: Dockerfile.dev
+    volumes:
+      - $PWD/js/client/node_modules:/usr/src/app/node_modules
+    environment:
+      env_file: .env
+      NODE_ENV: development
+      VIRTUAL_HOST: client.local
+      VIRTUAL_PORT: 3000
+    ports:
+      - 3000:3000
+    depends_on: 
+      - server

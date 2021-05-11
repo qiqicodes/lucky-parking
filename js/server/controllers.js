@@ -1,4 +1,4 @@
-dbHelpers = require("../database/index.js");
+dbHelpers = require("./database/index.js");
 
 function generateGeoData(data) {
   let dataSources = {
