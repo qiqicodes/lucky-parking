@@ -97,6 +97,7 @@ const ConnectGeosearch = ({
             maxDate={maxDate}
             dateFormat="MM/dd/yyyy"
             onChange={(date) => getEndDate(date)}
+            // placeholderText="04/01/2021"
           >
             <div style={{ color: "orangered", fontSize: "14px" }}>
               Please select a date prior <b>April 1st, 2021</b>.
